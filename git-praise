@@ -1,25 +1,28 @@
 #!/usr/bin/env ruby
 
+# Source: https://github.com/nene/config/blob/master/bin/git-praise
+
 def pretty_print(format, hash, commit, line)
   desc = format.
     gsub(/%H/, hash).
     gsub(/%h/, hash[0,8]).
     gsub(/%an/, commit[:author]).
     gsub(/%ae/, commit[:author_mail]).
-    gsub(/%ad/, commit[:author_time].strftime("%d. %b %Y")).
+    gsub(/%ad/, commit[:author_time].strftime("%Y.%m.%d")).
     gsub(/%Cred/, "\033[31m").
     gsub(/%Cgreen/, "\033[32m").
-    gsub(/%Cblue/, "\033[34m").
+    gsub(/%Cblue/, "\033[36m").
     gsub(/%Creset/, "\033[0m")
   puts desc + "\t" + line
 end
 
 path = ARGV[0]
+commit = ARGV[1]
 format = "%Cred%h%Cblue (%ad) %Cgreen%an%Creset"
 
 hash = ""
 commits = {}
-`git blame -p #{path}`.split("\n").each do |line|
+`git annotate -p #{path} #{commit}`.split("\n").each do |line|
   if line =~ /^([0-9a-f]{39,40})\s.*/
     hash = $1
     commits[hash] = {} unless commits[hash]
@@ -49,5 +52,4 @@ commits = {}
     pretty_print(format, hash, commits[hash], $1)
   end
 end
-
 
